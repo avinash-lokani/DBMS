@@ -1,0 +1,32 @@
+use sakila;
+
+select * from category; #comedy - 5 sports -15 Sci-fi -14
+
+#1. Find out the number of documentaries with deleted scenes.
+select * from film where film.special_features like '%Deleted Scenes%';
+
+# 2. Find out the number of sci-fi movies rented by the store managed by Jon Stephens --> staff id - 2
+select count(inv.inventory_id) from 
+(select inventory_id from inventory where inventory_id in 
+(select film_id from film_category where category_id = 14)) as inv 
+inner join 
+(select inventory_id from rental where staff_id = 2) as rent on rent.inventory_id = inv.inventory_id;
+
+#3. Find out the total sales from Animation movies.
+select * from sales_by_film_category where category = 'Animation';
+
+#4. Find out the top 3 rented category of movies by “PATRICIA JOHNSON”. customer_id -> 2
+select name from category  inner join 
+(select category_id,count(category_id) as count_of_category from film_category where film_id in
+(select film_id from inventory where inventory_id in 
+(select inventory_id from rental where customer_id = 2)) 
+group by category_id 
+order by count_of_category desc limit 3) as cat on cat.category_id = category.category_id;
+
+#5. Find out the number of R rated movies rented by “SUSAN WILSON”. customer_id = 8
+select * from rental as rent inner join
+(select inventory_id from inventory where film_id in 
+(select film_id from film where film.rating = 'R')) as inv on inv.inventory_id = rent.inventory_id where rent.customer_id = 
+(select customer_id from customer where first_name = 'SUSAN' and last_name = 'WILSON');
+
+
